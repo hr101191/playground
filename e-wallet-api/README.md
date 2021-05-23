@@ -4,10 +4,10 @@
 This is a project created to showcase creating a backend service using the spring reactive stack.
 
 We will be using the following modules from the spring reactive stacks:
-spring-boot-starter-webflux
-spring-boot-starter-data-r2dbc
+1. spring-boot-starter-webflux
+2. spring-boot-starter-data-r2dbc
 
-For the user stories, we will refer to a randomly selected coding test instructions found online.
+For the user stories, we will refer to a randomly selected coding test instructions found online.\
 See attached pdf: [JAVA-OfflineTest-April-2021.pdf](https://github.com/hr101191/playground/blob/master/e-wallet-api/JAVA-OfflineTest-April-2021.pdf)
 
 ## 2. Setup
