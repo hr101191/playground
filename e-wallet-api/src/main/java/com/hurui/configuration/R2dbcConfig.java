@@ -1,9 +1,9 @@
 package com.hurui.configuration;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -12,50 +12,50 @@ import org.springframework.transaction.ReactiveTransactionManager;
 import io.r2dbc.pool.PoolingConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import liquibase.integration.spring.SpringLiquibase;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
-@Configuration
+@ConfigurationProperties(prefix = "application.spring.r2dbc")
 @EnableR2dbcRepositories("com.hurui.repository")
+@EqualsAndHashCode(callSuper=false)
+@Data
 @RequiredArgsConstructor
-public class R2dbcConfig {
+public class R2dbcConfig extends AbstractR2dbcConfiguration {
 	
-	@Bean
-	public SpringLiquibase springLiquibase() {
-		DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-		dataSourceBuilder.driverClassName("org.h2.Driver");
-		dataSourceBuilder.url("jdbc:h2:mem:e-wallet");
-		dataSourceBuilder.username("sa");
-		dataSourceBuilder.password("password");
-		SpringLiquibase springLiquibase = new SpringLiquibase();
-		springLiquibase.setDataSource(dataSourceBuilder.build());
-		springLiquibase.setChangeLog("classpath:/db/changelog/db.changelog-master.xml");
-		return springLiquibase;
-	}
-	
+	private String host;
+	private Integer port;
+	private String database;
+	private String driver;
+	private String protocol;
+	private String user;
+	private String password;
+	private Integer initialSize;
+	private Integer maxSize;
+
 	//Example showing bootstrapping of r2dbc ConnectionFactory to allow performance fine-tuning
 	@Bean
 	@DependsOn("springLiquibase")
-	public DatabaseClient databaseClient() {
+	@Override
+	public ConnectionFactory connectionFactory() {
 		PoolingConnectionFactoryProvider provider = new PoolingConnectionFactoryProvider();
 		ConnectionFactory connectionFactory = provider.create(ConnectionFactoryOptions.builder()
-//				.option(ConnectionFactoryOptions.HOST, "localhost") //not used for h2 database
-//				.option(ConnectionFactoryOptions.PORT, 6603) //not used for h2 database
-				.option(ConnectionFactoryOptions.DATABASE, "e-wallet")
-				.option(ConnectionFactoryOptions.DRIVER, PoolingConnectionFactoryProvider.POOLING_DRIVER)
-				.option(ConnectionFactoryOptions.PROTOCOL, "h2:mem")
-				.option(ConnectionFactoryOptions.USER, "sa")
-				.option(ConnectionFactoryOptions.PASSWORD, "password")
-				.option(PoolingConnectionFactoryProvider.INITIAL_SIZE, 10) //Sample tuning for connection pool.
-				.option(PoolingConnectionFactoryProvider.MAX_SIZE, 30)
+				.option(ConnectionFactoryOptions.HOST, host) //not used by h2:mem database but no harm keeping it to maintain code consistency with switched to an actual rdbms
+				.option(ConnectionFactoryOptions.PORT, port) //not used by h2:mem database but no harm keeping it to maintain code consistency with switched to an actual rdbms
+				.option(ConnectionFactoryOptions.DATABASE, database)
+				.option(ConnectionFactoryOptions.DRIVER, driver)
+				.option(ConnectionFactoryOptions.PROTOCOL, protocol)
+				.option(ConnectionFactoryOptions.USER, user)
+				.option(ConnectionFactoryOptions.PASSWORD, password)
+				.option(PoolingConnectionFactoryProvider.INITIAL_SIZE, initialSize) //Sample tuning for connection pool.
+				.option(PoolingConnectionFactoryProvider.MAX_SIZE, maxSize)
 				.build());
-		return DatabaseClient.builder()
-				.connectionFactory(connectionFactory)
-				.build();	
+		return connectionFactory;
 	}
 	
 	@Bean
 	public ReactiveTransactionManager reactiveTransactionManager(DatabaseClient databaseClient) {
 		return new R2dbcTransactionManager(databaseClient.getConnectionFactory());
 	}
+
 }

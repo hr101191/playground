@@ -1,4 +1,4 @@
-package com.hurui.configuration;
+package com.hurui.router;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

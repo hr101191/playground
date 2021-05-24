@@ -1,4 +1,4 @@
-package com.hurui.configuration;
+package com.hurui.router;
 
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
