@@ -45,4 +45,5 @@ public class HazelcastConfig {
 	public HazelcastInstance hazelcastInstance(JetInstance jetInstance) {
 		return jetInstance.getHazelcastInstance();
 	}
+
 }

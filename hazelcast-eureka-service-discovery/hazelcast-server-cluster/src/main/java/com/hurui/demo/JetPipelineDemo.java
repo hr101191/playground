@@ -1,32 +1,22 @@
 package com.hurui.demo;
 
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.function.ServerRequest;
-import org.springframework.web.servlet.function.ServerResponse;
-
 import com.hazelcast.collection.IQueue;
-import com.hazelcast.config.ReliableTopicConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.function.ComparatorEx;
 import com.hazelcast.jet.JetInstance;
@@ -38,9 +28,10 @@ import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.WindowDefinition;
 import com.hazelcast.jet.pipeline.test.TestSources;
-import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.MessageListener;
+import com.hurui.service.VertxMessagingService;
+
+import io.vertx.core.json.JsonObject;
 
 @RestController
 public class JetPipelineDemo implements ApplicationListener<ApplicationStartedEvent> {
@@ -48,7 +39,6 @@ public class JetPipelineDemo implements ApplicationListener<ApplicationStartedEv
 
     public static final int TOP = 10;
     private static final String RESULTS = "top10_results";
-    private Map<Long, String> inMemoryMap;
     private AtomicInteger counter = new AtomicInteger();
     
 	@Autowired
@@ -62,6 +52,9 @@ public class JetPipelineDemo implements ApplicationListener<ApplicationStartedEv
 	
 	@Autowired
 	private SampleItemListener sampleItemListener;
+
+	@Autowired
+	private VertxMessagingService vertxMessagingService;
 	
 	public JetPipelineDemo() {
 		//init in memory map
@@ -106,21 +99,19 @@ public class JetPipelineDemo implements ApplicationListener<ApplicationStartedEv
     }
     
     @GetMapping("/queue")
-    public ResponseEntity<?> queue() {
-    	hazelcastInstance.getQueue("queue").add("This is a test message");
-    	return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> queue() throws InterruptedException, ExecutionException, TimeoutException {
+    	System.out.println(vertxMessagingService.request("queue", "test", JsonObject.class).body().encodePrettily());
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT); 	
     }
     
     @GetMapping("/topic")
-    public ResponseEntity<?> topic() {
-    	hazelcastInstance.getTopic("topic").publish("This is a test message");	
+    public ResponseEntity<?> topic() {    	
+    	vertxMessagingService.publish("topic", "test");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @GetMapping("/pipeline")
     public void test() {
-    	inMemoryMap = hazelcastInstance.getMap("map");
-    	hazelcastInstance.getQueue("queue");
     	Pipeline p = buildPipeline();
     	JobConfig config = new JobConfig();
         config.setName("hello-world");

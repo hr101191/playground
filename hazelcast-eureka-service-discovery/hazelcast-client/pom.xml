@@ -18,6 +18,7 @@
 		<hazelcast.eureka.one.version>2.0.1</hazelcast.eureka.one.version>
 		<hazelcast.jersey.dependencies.version>1.19.4</hazelcast.jersey.dependencies.version>
 		<spring.cloud-version>2020.0.3</spring.cloud-version>
+		<vertx.version>4.1.0</vertx.version>
 		<java.version>11</java.version>
 	</properties>
 
@@ -29,6 +30,13 @@
 				<version>${spring.cloud-version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-dependencies</artifactId>
+				<version>${vertx.version}</version>
+				<type>pom</type>
+			    <scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -51,12 +59,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-eureka-one</artifactId>
-			<version>${hazelcast.eureka.one.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
 			<version>${hazelcast.jersey.dependencies.version}</version>
@@ -72,6 +74,28 @@
 			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-apache-client4</artifactId>
 			<version>${hazelcast.jersey.dependencies.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-eureka-one</artifactId>
+			<version>${hazelcast.eureka.one.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-hazelcast</artifactId>
+		    <exclusions>
+		    	<exclusion>
+		    		<groupId>com.hazelcast</groupId>
+					<artifactId>hazelcast</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 
 		<dependency>
