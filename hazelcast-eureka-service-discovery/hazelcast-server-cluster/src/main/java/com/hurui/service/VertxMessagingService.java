@@ -11,8 +11,6 @@ public interface VertxMessagingService {
 
 	<T> void publish(String address, T message);
 
-	<T> void publish(String address, T message, DeliveryOptions deliveryOptions);
-
 	<T> void send(String address, T message);
 
 	<T> void send(String address, T message, DeliveryOptions deliveryOptions);

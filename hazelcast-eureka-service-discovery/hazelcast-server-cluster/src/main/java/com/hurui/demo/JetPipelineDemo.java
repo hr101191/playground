@@ -105,7 +105,8 @@ public class JetPipelineDemo implements ApplicationListener<ApplicationStartedEv
     }
     
     @GetMapping("/topic")
-    public ResponseEntity<?> topic() {    	
+    public ResponseEntity<?> topic() throws InterruptedException, ExecutionException, TimeoutException {    	
+    	//hazelcastInstance.getTopic("topic").publish("test");
     	vertxMessagingService.publish("topic", "test");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

@@ -21,7 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
-//@Component
+@Component
 public class VertxMessagingServiceImpl implements VertxMessagingService, ApplicationListener<ApplicationStartedEvent> {
 	
 	private Vertx clusteredVertx;

@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
@@ -24,6 +26,8 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 @Component
 public class VertxMessagingServiceImpl implements VertxMessagingService, ApplicationListener<ApplicationStartedEvent> {
 	
+	private static final Logger LOGGER = LoggerFactory.getLogger(VertxMessagingServiceImpl.class);
+	
 	private Vertx clusteredVertx;
 
 	@Autowired
@@ -36,106 +40,77 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		// complete initialization once it has gotten all the node data from eureka.
 		ClusterManager clusterManager = new HazelcastClusterManager(hazelcastInstance);
 		VertxOptions vertxOptions = new VertxOptions().setClusterManager(clusterManager);
-		Vertx.clusteredVertx(vertxOptions, res -> {
-			if(res.failed()) {
-				//failed to construct vertx cluster
-				res.cause().printStackTrace();
-			} else {
-				clusteredVertx = res.result();
-				//Construct eventBus listeners below
-				clusteredVertx.eventBus().consumer("queue", messageHandler -> {
-					System.out.println("Received message: " + messageHandler.body());
-					messageHandler.reply(new JsonObject().put("key", "value"));
-				});
-				clusteredVertx.eventBus().consumer("topic", messageHandler -> {
-					System.out.println("Received message: " + messageHandler.body());
-				});
-			}
-		});
+		Vertx.clusteredVertx(vertxOptions)
+			.onComplete(handler -> {
+				if(handler.failed()) {
+					LOGGER.error("Failed to create clustered Vertx. Stacktrace: ", handler.cause());
+				} else {
+					clusteredVertx = handler.result();
+					//Construct eventBus listeners below
+					clusteredVertx.eventBus().consumer("queue", messageHandler -> {
+						LOGGER.info("Queue: {} | Received message: {}", messageHandler.address(), messageHandler.body());
+						messageHandler.reply(new JsonObject().put("key", "value"));
+					});
+					clusteredVertx.eventBus().consumer("topic", messageHandler -> {
+						LOGGER.info("Topic: {} | Received message: {}", messageHandler.address(), messageHandler.body());
+					});
+				}
+			});
 	}
 	
 	@Override
 	public <T> void publish(String address, T message) {
 		//Always check if vertx cluster is not null before proceeding
-		Optional<Vertx> clusteredVertxOptional = Optional.ofNullable(clusteredVertx);
-		if(clusteredVertxOptional.isPresent()) {
-			//Code can be synchronous or asynchronous depending on preference
-			clusteredVertxOptional.get().eventBus().publisher(address).write(message, res -> {
-				if(res.failed()) {
+		Optional.ofNullable(clusteredVertx)
+			.orElseThrow()
+			.eventBus().publisher(address).write(message, handler -> {
+				if(handler.failed()) {
 					//log error during publish
-					res.cause().printStackTrace();
+					LOGGER.error("Failed to publish message to cluster. Stacktrace: ", handler.cause());
 					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
+					LOGGER.warn("Failed to publish message to cluster. Address: {} | Message Body: {}", address, message);
 				} else {
-					//Optionally log the message body	
-					System.out.println("Message published to cluster successfully: " + message);
+					LOGGER.info("Successfully published message to cluster. Address: {} | Message Body: {}", address, message);
 				}
 			});
-		} else {
-			//Do nothing and warn that vertx cluster is not ready!
-		}
-	}
-
-	@Override
-	public <T> void publish(String address, T message, DeliveryOptions deliveryOptions) {
-		//Always check if vertx cluster is not null before proceeding
-		Optional<Vertx> clusteredVertxOptional = Optional.ofNullable(clusteredVertx);
-		if(clusteredVertxOptional.isPresent()) {
-			//Code can be synchronous or asynchronous depending on preference
-			clusteredVertxOptional.get().eventBus().publisher(address, deliveryOptions).write(message, res -> {
-				if(res.failed()) {
-					//log error during publish
-					res.cause().printStackTrace();
-					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
-				} else {
-					//Optionally log the message body
-					System.out.println("Message published to cluster successfully: " + message);
-				}
-			});
-		} else {
-			//Do nothing and warn that vertx cluster is not ready!
-		}
-	}
+	}	
 	
 	@Override
 	public <T> void send(String address, T message) {
 		//Always check if vertx cluster is not null before proceeding
-		Optional<Vertx> clusteredVertxOptional = Optional.ofNullable(clusteredVertx);
-		if(clusteredVertxOptional.isPresent()) {
-			//Code can be synchronous or asynchronous depending on preference
-			clusteredVertxOptional.get().eventBus().sender(address).write(message, res -> {
-				if(res.failed()) {
+		Optional.ofNullable(clusteredVertx)
+			.orElseThrow()
+			.eventBus()
+			.sender(address)
+			.write(message, handler -> {
+				if(handler.failed()) {
 					//log error during publish
-					res.cause().printStackTrace();
+					LOGGER.error("Failed to send message to cluster. Stacktrace: ", handler.cause());
 					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
+					LOGGER.warn("Failed to send message to cluster. Address: {} | Message Body: {}", address, message);
 				} else {
-					//Optionally log the message body
-					System.out.println("Message sent to cluster successfully: " + message);
+					LOGGER.info("Successfully sent message to cluster. Address: {} | Message Body: {}", address, message);
 				}
 			});
-		} else {
-			//Do nothing and warn that vertx cluster is not ready!
-		}
 	}
 	
 	@Override
 	public <T> void send(String address, T message, DeliveryOptions deliveryOptions) {
 		//Always check if vertx cluster is not null before proceeding
-		Optional<Vertx> clusteredVertxOptional = Optional.ofNullable(clusteredVertx);
-		if(clusteredVertxOptional.isPresent()) {
-			//Code can be synchronous or asynchronous depending on preference
-			clusteredVertxOptional.get().eventBus().sender(address, deliveryOptions).write(message, res -> {
-				if(res.failed()) {
+		Optional.ofNullable(clusteredVertx)
+			.orElseThrow()
+			.eventBus()
+			.sender(address, deliveryOptions)
+			.write(message, handler -> {
+				if(handler.failed()) {
 					//log error during publish
-					res.cause().printStackTrace();
+					LOGGER.error("Failed to send message to cluster. Stacktrace: ", handler.cause());
 					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
+					LOGGER.warn("Failed to send message to cluster. Address: {} | Message Body: {}", address, message);
 				} else {
-					//Optionally log the message body
-					System.out.println("Message sent to cluster successfully: " + message);
+					LOGGER.info("Successfully sent message to cluster. Address: {} | Message Body: {}", address, message);
 				}
 			});
-		} else {
-			//Do nothing and warn that vertx cluster is not ready!
-		}
 	}
 	
 	@Override
@@ -148,8 +123,7 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		Optional.ofNullable(clusteredVertx)
 			.orElseThrow() //throw exception if vertx is not ready
 			.eventBus()
-			.<JsonObject>request(address, message)
-			.onComplete(handler -> {
+			.<JsonObject>request(address, message, handler -> {
 				if(handler.failed()) {
 					completableFuture.completeExceptionally(handler.cause());
 				} else {
@@ -170,8 +144,7 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		Optional.ofNullable(clusteredVertx)
 			.orElseThrow() //throw exception if vertx is not ready
 			.eventBus()
-			.<JsonObject>request(address, message, deliveryOptions)
-			.onComplete(handler -> {
+			.<JsonObject>request(address, message, deliveryOptions, handler -> {
 				if(handler.failed()) {
 					completableFuture.completeExceptionally(handler.cause());
 				} else {
@@ -193,8 +166,7 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		Optional.ofNullable(clusteredVertx)
 			.orElseThrow() //throw exception if vertx is not ready
 			.eventBus()
-			.<U>request(address, message)
-			.onComplete(handler -> {
+			.<U>request(address, message, handler -> {
 				if(handler.failed()) {
 					completableFuture.completeExceptionally(handler.cause());
 				} else {
@@ -215,8 +187,7 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		Optional.ofNullable(clusteredVertx)
 			.orElseThrow() //throw exception if vertx is not ready
 			.eventBus()
-			.<U>request(address, message, deliveryOptions)
-			.onComplete(handler -> {
+			.<U>request(address, message, deliveryOptions, handler -> {
 				if(handler.failed()) {
 					completableFuture.completeExceptionally(handler.cause());
 				} else {
