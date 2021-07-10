@@ -15,11 +15,13 @@ import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.HazelcastInstance;
 
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.VerticleFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
@@ -47,13 +49,16 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 				} else {
 					clusteredVertx = handler.result();
 					//Construct eventBus listeners below
-					clusteredVertx.eventBus().consumer("queue", messageHandler -> {
-						LOGGER.info("Queue: {} | Received message: {}", messageHandler.address(), messageHandler.body());
-						messageHandler.reply(new JsonObject().put("key", "value"));
-					});
-					clusteredVertx.eventBus().consumer("topic", messageHandler -> {
-						LOGGER.info("Topic: {} | Received message: {}", messageHandler.address(), messageHandler.body());
-					});
+//					clusteredVertx.eventBus().consumer("queue", messageHandler -> {
+//						LOGGER.info("Queue: {} | Received message: {}", messageHandler.address(), messageHandler.body());
+//						messageHandler.reply(new JsonObject().put("key", "value"));
+//					});
+//					clusteredVertx.eventBus().consumer("topic", messageHandler -> {
+//						LOGGER.info("Topic: {} | Received message: {}", messageHandler.address(), messageHandler.body());
+//					});
+					VerticleFactory verticleFactory = event.getApplicationContext().getBean(SpringVerticleFactory.class);
+					clusteredVertx.registerVerticleFactory(verticleFactory);
+					clusteredVertx.deployVerticle(verticleFactory.prefix() + ":" + EventBusVerticle.class.getName(), new DeploymentOptions().setInstances(2));
 				}
 			});
 	}
@@ -63,16 +68,17 @@ public class VertxMessagingServiceImpl implements VertxMessagingService, Applica
 		//Always check if vertx cluster is not null before proceeding
 		Optional.ofNullable(clusteredVertx)
 			.orElseThrow()
-			.eventBus().publisher(address).write(message, handler -> {
-				if(handler.failed()) {
-					//log error during publish
-					LOGGER.error("Failed to publish message to cluster. Stacktrace: ", handler.cause());
-					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
-					LOGGER.warn("Failed to publish message to cluster. Address: {} | Message Body: {}", address, message);
-				} else {
-					LOGGER.info("Successfully published message to cluster. Address: {} | Message Body: {}", address, message);
-				}
-			});
+			.eventBus().publish(address, message);//.publisher(address).write(message);
+//					, handler -> {
+//				if(handler.failed()) {
+//					//log error during publish
+//					LOGGER.error("Failed to publish message to cluster. Stacktrace: ", handler.cause());
+//					//Optionally persist the message here (remember to use executeBlocking if method is blocking as code runs on vertx eventLoop here)
+//					LOGGER.warn("Failed to publish message to cluster. Address: {} | Message Body: {}", address, message);
+//				} else {
+//					LOGGER.info("Successfully published message to cluster. Address: {} | Message Body: {}", address, message);
+//				}
+//			});
 	}	
 	
 	@Override
