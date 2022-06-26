@@ -1,4 +1,4 @@
-package com.hurui.handler;
+package com.hurui.web;
 
 import com.hurui.verticle.HttpServerVerticle;
 import io.vertx.core.Handler;

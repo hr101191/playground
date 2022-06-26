@@ -11,5 +11,5 @@ import io.vertx.ext.web.api.service.WebApiServiceGen;
 public interface TestWebApiService {
 
     @Fluent
-    TestWebApiService listPets(Integer limit, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+    TestWebApiService listPosts(Integer limit, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
 }

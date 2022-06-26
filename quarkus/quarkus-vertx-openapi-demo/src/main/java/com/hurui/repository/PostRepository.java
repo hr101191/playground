@@ -1,10 +1,10 @@
 package com.hurui.repository;
 
-import com.hurui.entity.Topic;
+import com.hurui.entity.Post;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class TopicRepository implements PanacheRepository<Topic> {
+public class PostRepository implements PanacheRepository<Post> {
 }
