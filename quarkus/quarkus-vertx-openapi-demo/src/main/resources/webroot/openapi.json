@@ -29,7 +29,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 1000
             }
           }
         ],
@@ -63,6 +65,39 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "Create a post",
+        "operationId": "createPosts",
+        "tags": [
+          "posts"
+        ],
+        "requestBody": {
+          "description": "Optional description*",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -71,25 +106,56 @@
       "Post": {
         "type": "object",
         "required": [
-          "id",
-          "title"
+          "title",
+          "text",
+          "displayName",
+          "likes",
+          "dislikes"
         ],
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "minimum": 1
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1,
+            "maximum": 500
           },
           "text": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1,
+            "maximum": 20000
+          },
+          "displayName": {
+            "type": "string",
+            "minimum": 1,
+            "maximum": 20000
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "dislikes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
           },
           "comments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Comments"
-            }
+            "type": "object",
+            "$ref": "#/components/schemas/Comments"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time",
+            "minimum": 1
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time",
+            "minimum": 1
           }
         }
       },
@@ -102,19 +168,50 @@
       "Comment": {
         "type": "object",
         "required": [
-          "id",
-          "title"
+          "title",
+          "text",
+          "displayName",
+          "likes",
+          "dislikes"
         ],
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "minimum": 1
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1
           },
           "text": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1
+          },
+          "displayName": {
+            "type": "string",
+            "minimum": 1,
+            "maximum": 20000
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "dislikes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time",
+            "minimum": 1
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time",
+            "minimum": 1
           }
         }
       },

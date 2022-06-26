@@ -28,7 +28,6 @@ public class PostServiceImpl implements PostService {
         this.postRepository = postRepository;
     }
 
-    @Blocking
     @Override
     public Uni<List<Post>> listPosts(Integer limit) {
         return Uni.createFrom().<List<Post>>emitter(uniEmitter -> {
@@ -52,5 +51,17 @@ public class PostServiceImpl implements PostService {
                         uniEmitter.fail(ex);
                     }
                 });
+    }
+
+    @Override
+    public Uni<Post> createPosts(Post post) {
+        return Uni.createFrom().emitter(uniEmitter -> {
+            try {
+                this.postRepository.persist(post);
+                uniEmitter.complete(post);
+            } catch (Exception ex) {
+                uniEmitter.fail(ex);
+            }
+        });
     }
 }

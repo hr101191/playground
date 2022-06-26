@@ -1,7 +1,7 @@
 package com.hurui.verticle;
 
 import com.hurui.web.HttpFailureHandler;
-import com.hurui.web.TestWebApiService;
+import com.hurui.web.PostWebApiService;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.*;
@@ -23,18 +23,18 @@ public class HttpServerVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(HttpServerVerticle.class);
 
     private final HttpFailureHandler httpFailureHandler;
-    private final TestWebApiService testWebApiService;
+    private final PostWebApiService postWebApiService;
 
-    public HttpServerVerticle(HttpFailureHandler httpFailureHandler, TestWebApiService testWebApiService) {
+    public HttpServerVerticle(HttpFailureHandler httpFailureHandler, PostWebApiService postWebApiService) {
         this.httpFailureHandler = httpFailureHandler;
-        this.testWebApiService = testWebApiService;
+        this.postWebApiService = postWebApiService;
     }
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         MessageConsumer<JsonObject> messageConsumer = new ServiceBinder(this.vertx.getDelegate())
                 .setAddress("x-vertx-event-bus-address-posts")
-                .register(TestWebApiService.class, testWebApiService);
+                .register(PostWebApiService.class, postWebApiService);
         messageConsumer.completionHandler(result -> {
             if(result.succeeded()) {
                 logger.info("Successfully created service proxy.");
@@ -48,6 +48,9 @@ public class HttpServerVerticle extends AbstractVerticle {
                     RouterBuilderOptions routerBuilderOptions = new RouterBuilderOptions();
                     routerBuilder.setOptions(routerBuilderOptions);
                     routerBuilder.operation("listPosts")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(100L));
+                    routerBuilder.operation("createPosts")
                             .failureHandler(this.httpFailureHandler::handle)
                             .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(100L));
                     Router router = routerBuilder.createRouter();

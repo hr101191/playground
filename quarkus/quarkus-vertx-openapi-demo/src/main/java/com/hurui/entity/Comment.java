@@ -28,7 +28,7 @@ public class Comment extends PanacheEntityBase implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
 
-    @Column(name = "text", length = 300, nullable = false)
+    @Column(name = "text", length = 20000, nullable = false)
     private String text;
 
     @Column(name = "display_name", length = 300, nullable = false)

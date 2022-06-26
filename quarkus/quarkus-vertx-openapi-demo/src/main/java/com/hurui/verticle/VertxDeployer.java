@@ -24,16 +24,19 @@ public class VertxDeployer {
     private static final Logger logger = LoggerFactory.getLogger(VertxDeployer.class);
 
     private final Vertx vertx;
+    private final QuarkusVerticleFactory quarkusVerticleFactory;
     private final HttpServerVerticle httpServerVerticle;
     private final PostService postService;
 
-    public VertxDeployer(Vertx vertx, HttpServerVerticle httpServerVerticle, PostService postService) {
+    public VertxDeployer(Vertx vertx, QuarkusVerticleFactory quarkusVerticleFactory, HttpServerVerticle httpServerVerticle, PostService postService) {
         this.vertx = vertx;
+        this.quarkusVerticleFactory = quarkusVerticleFactory;
         this.httpServerVerticle = httpServerVerticle;
         this.postService = postService;
     }
 
     void deployVerticles(@Observes StartupEvent startupEvent) {
+        //this.vertx.registerVerticleFactory(this.quarkusVerticleFactory);
         this.postService.listPosts(1)
                 .runSubscriptionOn(Infrastructure.getDefaultExecutor())
                 .subscribe()
