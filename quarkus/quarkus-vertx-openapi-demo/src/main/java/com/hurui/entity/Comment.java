@@ -1,8 +1,12 @@
 package com.hurui.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.smallrye.common.constraint.NotNull;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -25,7 +29,10 @@ public class Comment extends PanacheEntityBase implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotNull
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", insertable = false, updatable = false)
     private Post post;
 
     @Column(name = "text", length = 20000, nullable = false)
@@ -41,10 +48,12 @@ public class Comment extends PanacheEntityBase implements Serializable {
     private Long dislikes;
 
     @NotAudited
+    @CreationTimestamp
     @Column(name = "created_date", nullable = false)
     private ZonedDateTime createdDate;
 
     @NotAudited
+    @UpdateTimestamp
     @Column(name = "last_modified_date", nullable = false)
     private ZonedDateTime lastModifiedDate;
 
@@ -67,19 +76,14 @@ public class Comment extends PanacheEntityBase implements Serializable {
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        CommentConverter.toJson(this, jsonObject);
+        jsonObject.put("id", this.getId());
+        jsonObject.put("text", this.getText());
+        jsonObject.put("displayName", this.getDisplayName());
+        jsonObject.put("likes", this.getLikes());
+        jsonObject.put("dislikes", this.getDislikes());
+        jsonObject.put("createdDate", this.getCreatedDate().toString());
+        jsonObject.put("lastModifiedDate", this.getLastModifiedDate().toString());
         return jsonObject;
-    }
-
-    @PrePersist
-    private void prePersist() {
-        this.setCreatedDate(ZonedDateTime.now());
-        this.setLastModifiedDate(ZonedDateTime.now());
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.setLastModifiedDate(ZonedDateTime.now());
     }
 
     public Long getId() {

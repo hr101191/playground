@@ -30,15 +30,15 @@ public class QuarkusVerticleFactory implements VerticleFactory {
 
     @Override
     public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise) {
-        String clazz = VerticleFactory.removePrefix(verticleName);
         Future<Verticle> verticleFuture = this.vertx.executeBlocking(handler -> {
             try {
+                Class<?> clazz = Class.forName(VerticleFactory.removePrefix(verticleName));
                 Optional<Bean<?>> beansOptional = Arc.container().beanManager().getBeans(clazz).stream().findFirst();
                 if(beansOptional.isPresent()) {
                     Verticle verticle = (Verticle) beansOptional.get();
                     handler.complete(verticle);
                 } else {
-                    handler.fail(new RuntimeException("Failed to retrieve bean from container. Bean name: " + clazz));
+                    handler.fail(new RuntimeException("Failed to retrieve bean from container. Class: " + verticleName));
                 }
             } catch (Exception ex) {
                 handler.fail(ex);

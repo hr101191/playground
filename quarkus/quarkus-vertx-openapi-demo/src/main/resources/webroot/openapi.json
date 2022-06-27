@@ -168,7 +168,6 @@
       "Comment": {
         "type": "object",
         "required": [
-          "title",
           "text",
           "displayName",
           "likes",
@@ -178,10 +177,6 @@
           "id": {
             "type": "integer",
             "format": "int64",
-            "minimum": 1
-          },
-          "title": {
-            "type": "string",
             "minimum": 1
           },
           "text": {

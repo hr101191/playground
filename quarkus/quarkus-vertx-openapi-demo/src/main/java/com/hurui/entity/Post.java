@@ -3,6 +3,8 @@ package com.hurui.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
@@ -40,15 +42,16 @@ public class Post extends PanacheEntityBase implements Serializable {
     @Column(name = "dislikes", nullable = false)
     private Long dislikes;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(name = "comments")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Comment> comments = new ArrayList<>();
 
     @NotAudited
+    @CreationTimestamp
     @Column(name = "created_date", nullable = false)
     private ZonedDateTime createdDate;
 
     @NotAudited
+    @UpdateTimestamp
     @Column(name = "last_modified_date", nullable = false)
     private ZonedDateTime lastModifiedDate;
 
@@ -69,24 +72,12 @@ public class Post extends PanacheEntityBase implements Serializable {
 
     public Post(JsonObject jsonObject) {
         PostConverter.fromJson(jsonObject, this);
-        System.out.println("This comment count: " + (long) this.getComments().size());
     }
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         PostConverter.toJson(this, jsonObject);
         return jsonObject;
-    }
-
-    @PrePersist
-    private void prePersist() {
-        this.setCreatedDate(ZonedDateTime.now());
-        this.setLastModifiedDate(ZonedDateTime.now());
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.setLastModifiedDate(ZonedDateTime.now());
     }
 
     public Long getId() {
