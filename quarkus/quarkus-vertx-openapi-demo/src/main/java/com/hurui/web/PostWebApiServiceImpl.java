@@ -2,12 +2,15 @@ package com.hurui.web;
 
 import com.hurui.entity.Post;
 import com.hurui.service.PostService;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.service.ServiceRequest;
 import io.vertx.ext.web.api.service.ServiceResponse;
+import io.vertx.ext.web.handler.HttpException;
 import io.vertx.mutiny.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,24 +39,20 @@ public class PostWebApiServiceImpl implements PostWebApiService {
         this.postService.listPosts(limit)
                 .subscribe()
                 .with(result -> {
-                    resultHandler.handle(
-                            Future.succeededFuture(
-                                    ServiceResponse.completedWithJson(
-                                            new JsonArray(
-                                                    result.stream()
-                                                            .map(Post::toJson)
-                                                            .collect(Collectors.toList())
-                                            )
-                                    )
+                    ServiceResponse serviceResponse = ServiceResponse.completedWithJson(
+                            new JsonArray(
+                                    result.stream()
+                                            .map(Post::toJson)
+                                            .collect(Collectors.toList())
                             )
                     );
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [listPosts] | Service Response: {}", serviceResponseTrace.encode());
                 }, throwable -> {
-                    logger.error("Operation ID: [listPosts] | Failed to retrieve data. Stacktrace: ", throwable);
-                    resultHandler.handle(
-                            Future.succeededFuture(
-                                    new ServiceResponse().setStatusCode(500)
-                            )
-                    );
+                    logger.error("Http Request failed - Operation ID: [listPosts]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
                 });
         return this;
     }
@@ -64,18 +63,14 @@ public class PostWebApiServiceImpl implements PostWebApiService {
         this.postService.createPosts(body)
                 .subscribe()
                 .with(result -> {
-                    resultHandler.handle(
-                            Future.succeededFuture(
-                                    new ServiceResponse().setStatusCode(204)
-                            )
-                    );
+                    ServiceResponse serviceResponse = new ServiceResponse().setStatusCode(204);
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [createPosts] | Service Response: {}", serviceResponseTrace.encode());
                 }, throwable -> {
-                    logger.error("Operation: [createPosts] failed. Stacktrace: ", throwable);
-                    resultHandler.handle(
-                            Future.succeededFuture(
-                                    new ServiceResponse().setStatusCode(500)
-                            )
-                    );
+                    logger.error("Http Request failed - Operation ID: [createPosts]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
                 });
         return this;
     }

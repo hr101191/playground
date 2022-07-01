@@ -32,7 +32,7 @@ public class Comment extends PanacheEntityBase implements Serializable {
     @NotNull
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "FK_post_id"))
     private Post post;
 
     @Column(name = "text", length = 20000, nullable = false)

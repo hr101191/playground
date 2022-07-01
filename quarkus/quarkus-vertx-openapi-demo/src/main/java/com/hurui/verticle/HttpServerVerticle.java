@@ -1,6 +1,7 @@
 package com.hurui.verticle;
 
 import com.hurui.web.HttpFailureHandler;
+import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -21,9 +22,11 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpServerVerticle.class);
 
+    private final Router router;
     private final HttpFailureHandler httpFailureHandler;
 
-    public HttpServerVerticle(HttpFailureHandler httpFailureHandler) {
+    public HttpServerVerticle(Router router, HttpFailureHandler httpFailureHandler) {
+        this.router = router;
         this.httpFailureHandler = httpFailureHandler;
     }
 
@@ -39,17 +42,17 @@ public class HttpServerVerticle extends AbstractVerticle {
                     routerBuilder.operation("createPosts")
                             .failureHandler(this.httpFailureHandler::handle)
                             .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
-                    Router router = routerBuilder.createRouter();
-                    router.route().handler(StaticHandler.create("/webroot"));
-                    HttpServer httpServer = this.vertx.createHttpServer();
-                    return httpServer.requestHandler(router).listen(8080);
+                    Router vertxRouter = routerBuilder.createRouter();
+                    vertxRouter.route().handler(StaticHandler.create());
+                    router.mountSubRouter("/", vertxRouter);
+                    return Uni.createFrom().voidItem();
                 })
                 .subscribe()
                 .with(httpServer -> {
-                    logger.info("Http Server started on port: {}", httpServer.actualPort());
+                    logger.info("Vertx OpenAPI routes mounted to Quarkus HTTP Server successfully.");
                     startPromise.complete();
                 }, throwable -> {
-                    logger.error("Failed to start Http Server. Stacktrace: ", throwable);
+                    logger.error("Failed to mount Vertx OpenAPI routes to Quarkus HTTP Server. Stacktrace: ", throwable);
                     startPromise.fail(throwable);
                 });
     }
