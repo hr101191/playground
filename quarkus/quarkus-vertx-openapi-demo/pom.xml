@@ -9,7 +9,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<quarkus.platform.version>2.10.1.Final</quarkus.platform.version>
-		<smallrye-mutiny-vertx-web-api-service.version>2.22.0</smallrye-mutiny-vertx-web-api-service.version>
+		<smallrye-mutiny-vertx-bindings.version>2.22.0</smallrye-mutiny-vertx-bindings.version>
 		<quarkus-logging-logback.version>0.11.0</quarkus-logging-logback.version>
 		<build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -43,12 +43,15 @@
 		<dependency>
 			<groupId>io.smallrye.reactive</groupId>
 			<artifactId>smallrye-mutiny-vertx-web-api-service</artifactId>
-			<version>${smallrye-mutiny-vertx-web-api-service.version}</version>
+			<version>${smallrye-mutiny-vertx-bindings.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-codegen</artifactId>
-			<classifier>processor</classifier>
+		</dependency>
+		<dependency>
+			<groupId>io.smallrye.reactive</groupId>
+			<artifactId>vertx-mutiny-generator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
@@ -116,7 +119,15 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
+					<debug>true</debug>
+					<annotationProcessors>
+						<annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+					</annotationProcessors>
+					<!-- You may customize the output folder of the generated classes. *Best Practice: Do not generate in src/main/java -->
+					<!-- Default location: ${project.build.directory}/generated-sources/annotations -->
+					<!--<generatedSourcesDirectory>${project.build.directory}/generated-sources/annotations</generatedSourcesDirectory>-->
 					<compilerArgs>
+						<arg>-Acodegen.output=${project.build.directory}/generated-sources/annotations</arg>
 						<arg>-parameters</arg>
 					</compilerArgs>
 				</configuration>

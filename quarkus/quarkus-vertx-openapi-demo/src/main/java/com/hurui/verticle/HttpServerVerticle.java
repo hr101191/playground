@@ -6,7 +6,6 @@ import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.ext.web.openapi.RouterBuilderOptions;
-import io.vertx.mutiny.core.http.HttpServer;
 import io.vertx.mutiny.ext.web.Router;
 import io.vertx.mutiny.ext.web.handler.StaticHandler;
 import io.vertx.mutiny.ext.web.openapi.RouterBuilder;
