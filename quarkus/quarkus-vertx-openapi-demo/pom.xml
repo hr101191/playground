@@ -8,7 +8,7 @@
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<quarkus.platform.version>2.10.0.Final</quarkus.platform.version>
+		<quarkus.platform.version>2.10.1.Final</quarkus.platform.version>
 		<smallrye-mutiny-vertx-web-api-service.version>2.22.0</smallrye-mutiny-vertx-web-api-service.version>
 		<quarkus-logging-logback.version>0.11.0</quarkus-logging-logback.version>
 		<build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
