@@ -58,12 +58,74 @@ public class PostWebApiServiceImpl implements PostWebApiService {
     }
 
     @Override
-    public PostWebApiService createPosts(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
-        logger.info("Incoming Http Request - Operation ID: [createPosts] | Service Request: {}", request.toJson().encode());
-        this.postService.createPosts(body)
+    public PostWebApiService createPost(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+        logger.info("Incoming Http Request - Operation ID: [createPost] | Service Request: {}", request.toJson().encode());
+        this.postService.createPost(body)
                 .subscribe()
                 .with(result -> {
-                    ServiceResponse serviceResponse = new ServiceResponse().setStatusCode(204);
+                    ServiceResponse serviceResponse = new ServiceResponse()
+                            .setStatusCode(HttpResponseStatus.CREATED.code())
+                            .setStatusMessage(HttpResponseStatus.CREATED.reasonPhrase());
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [createPosts] | Service Response: {}", serviceResponseTrace.encode());
+                }, throwable -> {
+                    logger.error("Http Request failed - Operation ID: [createPost]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
+                });
+        return this;
+    }
+
+    @Override
+    public PostWebApiService updatePost(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+        logger.info("Incoming Http Request - Operation ID: [updatePost] | Service Request: {}", request.toJson().encode());
+        this.postService.updatePost(body)
+                .subscribe()
+                .with(result -> {
+                    ServiceResponse serviceResponse = new ServiceResponse()
+                            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+                            .setStatusMessage(HttpResponseStatus.NO_CONTENT.reasonPhrase());
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [createPosts] | Service Response: {}", serviceResponseTrace.encode());
+                }, throwable -> {
+                    logger.error("Http Request failed - Operation ID: [createPost]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
+                });
+        return this;
+    }
+
+    @Override
+    public PostWebApiService deletePost(Long id, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+        logger.info("Incoming Http Request - Operation ID: [deletePost] | Service Request: {}", request.toJson().encode());
+        this.postService.deletePost(id)
+                .subscribe()
+                .with(result -> {
+                    ServiceResponse serviceResponse = new ServiceResponse()
+                            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+                            .setStatusMessage(HttpResponseStatus.NO_CONTENT.reasonPhrase());
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [createPosts] | Service Response: {}", serviceResponseTrace.encode());
+                }, throwable -> {
+                    logger.error("Http Request failed - Operation ID: [createPost]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
+                });
+        return this;
+    }
+
+    @Override
+    public PostWebApiService getPostChangelog(Long id, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+        logger.info("Incoming Http Request - Operation ID: [getPostChangelog] | Service Request: {}", request.toJson().encode());
+        this.postService.getPostChangelog(id)
+                .subscribe()
+                .with(result -> {
+                    ServiceResponse serviceResponse = new ServiceResponse().setStatusCode(HttpResponseStatus.OK.code());
+                    serviceResponse.setStatusMessage(HttpResponseStatus.OK.reasonPhrase());
+                    serviceResponse.setPayload(result.toBuffer());
                     resultHandler.handle(Future.succeededFuture(serviceResponse));
                     JsonObject serviceResponseTrace = serviceResponse.toJson();
                     serviceResponseTrace.remove("payload");

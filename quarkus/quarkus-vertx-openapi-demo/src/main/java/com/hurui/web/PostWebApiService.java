@@ -15,5 +15,14 @@ public interface PostWebApiService {
     PostWebApiService listPosts(Integer limit, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
 
     @Fluent
-    PostWebApiService createPosts(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+    PostWebApiService createPost(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+
+    @Fluent
+    PostWebApiService updatePost(Post body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+
+    @Fluent
+    PostWebApiService deletePost(Long id, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+
+    @Fluent
+    PostWebApiService getPostChangelog(Long id, ServiceRequest serviceRequest, Handler<AsyncResult<ServiceResponse>> resultHandler);
 }

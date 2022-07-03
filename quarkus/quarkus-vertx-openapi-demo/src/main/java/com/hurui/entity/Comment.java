@@ -71,20 +71,14 @@ public class Comment extends PanacheEntityBase implements Serializable {
 
     public Comment(JsonObject jsonObject) {
         Comment comment = jsonObject.mapTo(Comment.class);
-        if(comment.getId() != null)
-            this.setId(comment.getId());
-        if(comment.getText() != null)
-            this.setText(comment.getText());
-        if(comment.getDisplayName() != null)
-            this.setDisplayName(comment.getDisplayName());
-        if(comment.getLikes() != null)
-            this.setLikes(comment.getLikes());
-        if(comment.getDislikes() != null)
-            this.setDislikes(comment.getDislikes());
-        if(comment.getCreatedDate() != null)
-            this.setCreatedDate(comment.getCreatedDate());
-        if(comment.getLastModifiedDate() != null)
-            this.setLastModifiedDate(comment.getLastModifiedDate());
+        this.setId(comment.getId());
+        this.setText(comment.getText());
+        this.setDisplayName(comment.getDisplayName());
+        this.setLikes(comment.getLikes());
+        this.setDislikes(comment.getDislikes());
+        this.setDislikes(comment.getDislikes());
+        this.setCreatedDate(comment.getCreatedDate());
+        this.setLastModifiedDate(comment.getLastModifiedDate());
     }
 
     public JsonObject toJson() {

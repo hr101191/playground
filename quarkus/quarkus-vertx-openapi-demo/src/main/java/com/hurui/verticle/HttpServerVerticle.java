@@ -38,7 +38,16 @@ public class HttpServerVerticle extends AbstractVerticle {
                     routerBuilder.operation("listPosts")
                             .failureHandler(this.httpFailureHandler::handle)
                             .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(20000L));
-                    routerBuilder.operation("createPosts")
+                    routerBuilder.operation("createPost")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("updatePost")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("deletePost")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("getPostChangelog")
                             .failureHandler(this.httpFailureHandler::handle)
                             .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
                     Router vertxRouter = routerBuilder.createRouter();

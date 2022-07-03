@@ -7,12 +7,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RevisionType;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Audited(withModifiedFlag = true)
@@ -43,7 +45,7 @@ public class Post extends PanacheEntityBase implements Serializable {
     private Long dislikes;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
 
     @NotAudited
     @CreationTimestamp
@@ -55,10 +57,16 @@ public class Post extends PanacheEntityBase implements Serializable {
     @Column(name = "last_modified_date", nullable = false)
     private ZonedDateTime lastModifiedDate;
 
+    @Transient
+    private RevisionType revisionType;
+
+    @Transient
+    private Set<String> modifiedFields;
+
     public Post() {
     }
 
-    public Post(Long id, String title, String text, String displayName, Long likes, Long dislikes, List<Comment> comments, ZonedDateTime createdDate, ZonedDateTime lastModifiedDate) {
+    public Post(Long id, String title, String text, String displayName, Long likes, Long dislikes, List<Comment> comments, ZonedDateTime createdDate, ZonedDateTime lastModifiedDate, RevisionType revisionType, Set<String> modifiedFields) {
         this.id = id;
         this.title = title;
         this.text = text;
@@ -68,30 +76,24 @@ public class Post extends PanacheEntityBase implements Serializable {
         this.comments = comments;
         this.createdDate = createdDate;
         this.lastModifiedDate = lastModifiedDate;
+        this.revisionType = revisionType;
+        this.modifiedFields = modifiedFields;
     }
 
     public Post(JsonObject jsonObject) {
         Post post = jsonObject.mapTo(Post.class);
-        if(post.getId() != null)
-            this.setId(post.getId());
-        if(post.getTitle() != null)
-            this.setTitle(post.getTitle());
-        if(post.getText() != null)
-            this.setText(post.getText());
-        if(post.getDisplayName() != null)
-            this.setDisplayName(post.getDisplayName());
-        if(post.getLikes() != null)
-            this.setLikes(post.getLikes());
-        if(post.getDislikes() != null)
-            this.setDislikes(post.getDislikes());
-        if(post.getComments() != null) {
-            List<Comment> comments = new ArrayList<>(post.getComments());
-            this.setComments(comments);
-        }
-        if(post.getCreatedDate() != null)
-            this.setCreatedDate(post.getCreatedDate());
-        if(post.getLastModifiedDate() != null)
-            this.setLastModifiedDate(post.getLastModifiedDate());
+        this.setId(post.getId());
+        this.setTitle(post.getTitle());
+        this.setText(post.getText());
+        this.setDisplayName(post.getDisplayName());
+        this.setLikes(post.getLikes());
+        this.setDislikes(post.getDislikes());
+        this.setDislikes(post.getDislikes());
+        this.setComments(post.getComments());
+        this.setCreatedDate(post.getCreatedDate());
+        this.setLastModifiedDate(post.getLastModifiedDate());
+        this.setRevisionType(post.getRevisionType());
+        this.setModifiedFields(post.getModifiedFields());
     }
 
     public JsonObject toJson() {
@@ -168,5 +170,21 @@ public class Post extends PanacheEntityBase implements Serializable {
 
     public void setLastModifiedDate(ZonedDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public RevisionType getRevisionType() {
+        return revisionType;
+    }
+
+    public void setRevisionType(RevisionType revisionType) {
+        this.revisionType = revisionType;
+    }
+
+    public Set<String> getModifiedFields() {
+        return modifiedFields;
+    }
+
+    public void setModifiedFields(Set<String> modifiedFields) {
+        this.modifiedFields = modifiedFields;
     }
 }
