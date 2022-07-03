@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 @Audited(withModifiedFlag = true)
 @Table(name = "post")
-@DataObject(generateConverter = true)
+@DataObject
 public class Post extends PanacheEntityBase implements Serializable {
 
     private static final long serialVersionUID = -4785888052205745953L;
@@ -42,8 +42,8 @@ public class Post extends PanacheEntityBase implements Serializable {
     @Column(name = "dislikes", nullable = false)
     private Long dislikes;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Comment> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 
     @NotAudited
     @CreationTimestamp
@@ -71,13 +71,31 @@ public class Post extends PanacheEntityBase implements Serializable {
     }
 
     public Post(JsonObject jsonObject) {
-        PostConverter.fromJson(jsonObject, this);
+        Post post = jsonObject.mapTo(Post.class);
+        if(post.getId() != null)
+            this.setId(post.getId());
+        if(post.getTitle() != null)
+            this.setTitle(post.getTitle());
+        if(post.getText() != null)
+            this.setText(post.getText());
+        if(post.getDisplayName() != null)
+            this.setDisplayName(post.getDisplayName());
+        if(post.getLikes() != null)
+            this.setLikes(post.getLikes());
+        if(post.getDislikes() != null)
+            this.setDislikes(post.getDislikes());
+        if(post.getComments() != null) {
+            List<Comment> comments = new ArrayList<>(post.getComments());
+            this.setComments(comments);
+        }
+        if(post.getCreatedDate() != null)
+            this.setCreatedDate(post.getCreatedDate());
+        if(post.getLastModifiedDate() != null)
+            this.setLastModifiedDate(post.getLastModifiedDate());
     }
 
     public JsonObject toJson() {
-        JsonObject jsonObject = new JsonObject();
-        PostConverter.toJson(this, jsonObject);
-        return jsonObject;
+        return JsonObject.mapFrom(this);
     }
 
     public Long getId() {

@@ -7,9 +7,9 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RevisionType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,9 +17,8 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Audited(withModifiedFlag = true)
-//@AuditJoinTable
 @Table(name = "comment")
-@DataObject(generateConverter = true)
+@DataObject
 public class Comment extends PanacheEntityBase implements Serializable {
 
     private static final long serialVersionUID = 7522151012033553944L;
@@ -31,7 +30,7 @@ public class Comment extends PanacheEntityBase implements Serializable {
 
     @NotNull
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "FK_post_id"))
     private Post post;
 
@@ -71,19 +70,25 @@ public class Comment extends PanacheEntityBase implements Serializable {
     }
 
     public Comment(JsonObject jsonObject) {
-        CommentConverter.fromJson(jsonObject, this);
+        Comment comment = jsonObject.mapTo(Comment.class);
+        if(comment.getId() != null)
+            this.setId(comment.getId());
+        if(comment.getText() != null)
+            this.setText(comment.getText());
+        if(comment.getDisplayName() != null)
+            this.setDisplayName(comment.getDisplayName());
+        if(comment.getLikes() != null)
+            this.setLikes(comment.getLikes());
+        if(comment.getDislikes() != null)
+            this.setDislikes(comment.getDislikes());
+        if(comment.getCreatedDate() != null)
+            this.setCreatedDate(comment.getCreatedDate());
+        if(comment.getLastModifiedDate() != null)
+            this.setLastModifiedDate(comment.getLastModifiedDate());
     }
 
     public JsonObject toJson() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.put("id", this.getId());
-        jsonObject.put("text", this.getText());
-        jsonObject.put("displayName", this.getDisplayName());
-        jsonObject.put("likes", this.getLikes());
-        jsonObject.put("dislikes", this.getDislikes());
-        jsonObject.put("createdDate", this.getCreatedDate().toString());
-        jsonObject.put("lastModifiedDate", this.getLastModifiedDate().toString());
-        return jsonObject;
+        return JsonObject.mapFrom(this);
     }
 
     public Long getId() {
