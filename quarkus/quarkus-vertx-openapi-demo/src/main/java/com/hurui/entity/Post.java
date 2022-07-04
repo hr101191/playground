@@ -38,13 +38,15 @@ public class Post extends PanacheEntityBase implements Serializable {
     @Column(name = "display_name", length = 300, nullable = false)
     private String displayName;
 
+    @NotAudited
     @Column(name = "likes", nullable = false)
     private Long likes;
 
+    @NotAudited
     @Column(name = "dislikes", nullable = false)
     private Long dislikes;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @NotAudited
@@ -88,12 +90,17 @@ public class Post extends PanacheEntityBase implements Serializable {
         this.setDisplayName(post.getDisplayName());
         this.setLikes(post.getLikes());
         this.setDislikes(post.getDislikes());
-        this.setDislikes(post.getDislikes());
-        this.setComments(post.getComments());
+        //resolve one-to-many mapping
+        if(post.getComments() != null) {
+            List<Comment> comments = post.getComments();
+            comments.forEach(comment -> comment.setPost(this));
+            this.comments = comments;
+        }
         this.setCreatedDate(post.getCreatedDate());
         this.setLastModifiedDate(post.getLastModifiedDate());
         this.setRevisionType(post.getRevisionType());
         this.setModifiedFields(post.getModifiedFields());
+
     }
 
     public JsonObject toJson() {

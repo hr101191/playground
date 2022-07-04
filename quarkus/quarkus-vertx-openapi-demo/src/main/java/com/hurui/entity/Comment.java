@@ -9,7 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
-import org.hibernate.envers.RevisionType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -31,7 +30,7 @@ public class Comment extends PanacheEntityBase implements Serializable {
     @NotNull
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "FK_post_id"))
+    @JoinColumn(name = "post_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_post_id"))
     private Post post;
 
     @Column(name = "text", length = 20000, nullable = false)
@@ -40,9 +39,11 @@ public class Comment extends PanacheEntityBase implements Serializable {
     @Column(name = "display_name", length = 300, nullable = false)
     private String displayName;
 
+    @NotAudited
     @Column(name = "likes", nullable = false)
     private Long likes;
 
+    @NotAudited
     @Column(name = "dislikes", nullable = false)
     private Long dislikes;
 

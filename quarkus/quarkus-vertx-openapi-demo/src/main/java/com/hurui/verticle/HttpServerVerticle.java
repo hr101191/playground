@@ -50,6 +50,21 @@ public class HttpServerVerticle extends AbstractVerticle {
                     routerBuilder.operation("getPostChangelog")
                             .failureHandler(this.httpFailureHandler::handle)
                             .routeToEventBus("x-vertx-event-bus-address-posts", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("listComments")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-comments", new DeliveryOptions().setSendTimeout(20000L));
+                    routerBuilder.operation("createComment")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-comments", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("updateComment")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-comments", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("deleteComment")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-comments", new DeliveryOptions().setSendTimeout(2000L));
+                    routerBuilder.operation("getCommentChangelog")
+                            .failureHandler(this.httpFailureHandler::handle)
+                            .routeToEventBus("x-vertx-event-bus-address-comments", new DeliveryOptions().setSendTimeout(2000L));
                     Router vertxRouter = routerBuilder.createRouter();
                     vertxRouter.route().handler(StaticHandler.create());
                     router.mountSubRouter("/", vertxRouter);

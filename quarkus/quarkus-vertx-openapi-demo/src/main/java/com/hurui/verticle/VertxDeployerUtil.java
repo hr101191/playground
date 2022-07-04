@@ -30,7 +30,7 @@ public class VertxDeployerUtil {
     public static Uni<List<String>> deployVerticle(Vertx vertx, Instance<? extends AbstractVerticle> verticleInstance, DeploymentOptions deploymentOptions, int instances) {
         List<Uni<String>> deploymentIdsUni = new ArrayList<>();
         for(int i = 0; i < instances; i++) {
-            if(instances > 1) {
+            if(deploymentOptions.getInstances() > 1) {
                 logger.warn("Instance count in DeploymentOptions is > 1. Resetting instance count to 1. Please use method parameter [instances] to specify number of Verticle instance(s) to be deployed.");
                 deploymentOptions.setInstances(1);
             }

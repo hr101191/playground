@@ -90,14 +90,18 @@ public class PostServiceImpl implements PostService {
                 if(post.getId() != null) {
                     Optional<Post> entityOptional = this.postRepository.findByIdOptional(post.getId());
                     entityOptional.ifPresentOrElse(entity -> {
+                        entity.setId(post.getId());
                         entity.setTitle(post.getTitle());
                         entity.setText(post.getText());
                         entity.setDisplayName(post.getDisplayName());
                         entity.setLikes(post.getLikes());
                         entity.setDislikes(post.getDislikes());
-                        entity.setComments(post.getComments());
+                        entity.getComments().clear();
+                        entity.getComments().addAll(post.getComments());
                         this.postRepository.persist(entity);
-                        uniEmitter.complete(entity);
+//                        post.setId(entity.getId());
+//                        this.postRepository.persist(post);
+                        uniEmitter.complete(post);
                     }, () -> {
                         uniEmitter.fail(new RuntimeException("ID " + post.getId() + " is not found."));
                     });
