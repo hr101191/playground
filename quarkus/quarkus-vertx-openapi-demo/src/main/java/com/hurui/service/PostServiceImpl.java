@@ -1,5 +1,6 @@
 package com.hurui.service;
 
+import com.hurui.entity.Comment;
 import com.hurui.entity.Post;
 import com.hurui.envers.RevisionInfo;
 import com.hurui.repository.PostRepository;
@@ -16,10 +17,8 @@ import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.LockModeType;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -96,11 +95,36 @@ public class PostServiceImpl implements PostService {
                         entity.setDisplayName(post.getDisplayName());
                         entity.setLikes(post.getLikes());
                         entity.setDislikes(post.getDislikes());
-                        entity.getComments().clear();
-                        entity.getComments().addAll(post.getComments());
-                        this.postRepository.persist(entity);
-//                        post.setId(entity.getId());
-//                        this.postRepository.persist(post);
+                        List<Comment> updatedComments = new ArrayList<>();
+                        if(post.getComments() != null) {
+                            if(post.getComments().size() > 0) {
+                                updatedComments.addAll(post.getComments());
+                                if(entity.getComments() != null) {
+                                    List<Comment> existingComments = entity.getComments();
+                                    Map<Long, Comment> existingCommentsMap = existingComments.stream()
+                                            .collect(Collectors.toMap(Comment::getId, Function.identity()));
+                                    List<Comment> resolvedComments = new ArrayList<>();
+                                    updatedComments.forEach(comment -> {
+                                        if(existingCommentsMap.containsKey(comment.getId())) {
+                                            Comment resolved = existingCommentsMap.get(comment.getId());
+                                            resolved.setText(comment.getText());
+                                            resolved.setDisplayName(comment.getDisplayName());
+                                            resolved.setLikes(comment.getLikes());
+                                            resolved.setDislikes(comment.getDislikes());
+                                            resolvedComments.add(resolved);
+                                        } else {
+                                            comment.setPost(entity);
+                                            resolvedComments.add(comment);
+                                        }
+                                    });
+                                    entity.getComments().clear();
+                                    entity.getComments().addAll(resolvedComments);
+                                } else {
+                                    updatedComments.forEach(comment -> comment.setPost(entity));
+                                    entity.setComments(updatedComments);
+                                }
+                            }
+                        }
                         uniEmitter.complete(post);
                     }, () -> {
                         uniEmitter.fail(new RuntimeException("ID " + post.getId() + " is not found."));

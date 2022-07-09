@@ -337,6 +337,19 @@
         "tags": [
           "comments"
         ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "query",
+            "description": "Comments belonging to a particular Post ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
         "requestBody": {
           "description": "Optional description*",
           "required": true,

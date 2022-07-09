@@ -106,6 +106,24 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Uni<Comment> updateComment(Long postId, Comment comment) {
+        return Uni.createFrom().emitter(uniEmitter -> {
+            try {
+                this.postRepository.findByIdOptional(postId)
+                        .ifPresentOrElse(post -> {
+                            comment.setPost(post);
+                            this.commentRepository.persist(comment);
+                            uniEmitter.complete(comment);
+                        }, () -> {
+                            uniEmitter.fail(new RuntimeException("postId is not found"));
+                        });
+            } catch (Exception ex) {
+                uniEmitter.fail(ex);
+            }
+        });
+    }
+
+    @Override
     public Uni<Void> deleteComment(Long id) {
         return Uni.createFrom().emitter(uniEmitter -> {
             try {

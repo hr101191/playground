@@ -89,9 +89,9 @@ public class PostWebApiServiceImpl implements PostWebApiService {
                     resultHandler.handle(Future.succeededFuture(serviceResponse));
                     JsonObject serviceResponseTrace = serviceResponse.toJson();
                     serviceResponseTrace.remove("payload");
-                    logger.info("Http Request completed successfully - Operation ID: [createPosts] | Service Response: {}", serviceResponseTrace.encode());
+                    logger.info("Http Request completed successfully - Operation ID: [updatePost] | Service Response: {}", serviceResponseTrace.encode());
                 }, throwable -> {
-                    logger.error("Http Request failed - Operation ID: [createPost]. Stacktrace: ", throwable);
+                    logger.error("Http Request failed - Operation ID: [updatePost]. Stacktrace: ", throwable);
                     resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
                 });
         return this;

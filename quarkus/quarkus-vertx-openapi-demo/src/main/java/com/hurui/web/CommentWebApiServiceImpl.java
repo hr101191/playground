@@ -105,7 +105,22 @@ public class CommentWebApiServiceImpl implements CommentWebApiService{
     }
 
     @Override
-    public CommentWebApiService updateComment(Comment body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+    public CommentWebApiService updateComment(Long postId, Comment body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+        logger.info("Incoming Http Request - Operation ID: [updateComment] | Service Request: {}", request.toJson().encode());
+        this.commentService.updateComment(postId, body)
+                .subscribe()
+                .with(result -> {
+                    ServiceResponse serviceResponse = new ServiceResponse()
+                            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+                            .setStatusMessage(HttpResponseStatus.NO_CONTENT.reasonPhrase());
+                    resultHandler.handle(Future.succeededFuture(serviceResponse));
+                    JsonObject serviceResponseTrace = serviceResponse.toJson();
+                    serviceResponseTrace.remove("payload");
+                    logger.info("Http Request completed successfully - Operation ID: [updateComment] | Service Response: {}", serviceResponseTrace.encode());
+                }, throwable -> {
+                    logger.error("Http Request failed - Operation ID: [updateComment]. Stacktrace: ", throwable);
+                    resultHandler.handle(Future.failedFuture(new HttpException(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), throwable)));
+                });
         return this;
     }
 

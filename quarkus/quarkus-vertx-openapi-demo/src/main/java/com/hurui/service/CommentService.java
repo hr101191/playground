@@ -10,6 +10,7 @@ public interface CommentService {
     Uni<List<Comment>> listComments(Integer limit);
     Uni<List<Comment>> listCommentsByPostId(Long postId);
     Uni<Comment> createComment(Long postId, Comment comment);
+    Uni<Comment> updateComment(Long postId, Comment comment);
     Uni<Void> deleteComment(Long id);
     Uni<JsonArray> getCommentChangelog(Long id);
 }

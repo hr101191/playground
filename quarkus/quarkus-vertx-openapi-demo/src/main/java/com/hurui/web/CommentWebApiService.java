@@ -18,7 +18,7 @@ public interface CommentWebApiService {
     CommentWebApiService createComment(Long postId, Comment body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
 
     @Fluent
-    CommentWebApiService updateComment(Comment body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
+    CommentWebApiService updateComment(Long postId, Comment body, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
 
     @Fluent
     CommentWebApiService deleteComment(Long id, ServiceRequest request, Handler<AsyncResult<ServiceResponse>> resultHandler);
